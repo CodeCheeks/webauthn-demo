@@ -11,14 +11,16 @@ $('#register').submit(function(event) {
         return
     }
 
-   getMakeCredentialsChallenge({username, name})
+    getMakeCredentialsChallenge({username, name})
     .then((response) => {
         let publicKey = preformatMakeCredReq(response);
         return navigator.credentials.create({ publicKey })
     })
     .then((newCred) => {
-        console.log(newCred)
+        let makeCredResponse = publicKeyCredentialToJSON(newCred);
+        console.log(makeCredResponse)
     })
+
 
 })
 
