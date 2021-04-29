@@ -10,10 +10,14 @@ $('#register').submit(function(event) {
         alert('Name or username is missing!')
         return
     }
-    
-    getMakeCredentialsChallenge({username, name})
+
+   getMakeCredentialsChallenge({username, name})
     .then((response) => {
-        console.log(response)
+        let publicKey = preformatMakeCredReq(response);
+        return navigator.credentials.create({ publicKey })
+    })
+    .then((newCred) => {
+        console.log(newCred)
     })
 
 })
