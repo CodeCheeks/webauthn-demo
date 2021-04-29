@@ -16,10 +16,19 @@ $('#register').submit(function(event) {
         let publicKey = preformatMakeCredReq(response);
         return navigator.credentials.create({ publicKey })
     })
-    .then((newCred) => {
-        let makeCredResponse = publicKeyCredentialToJSON(newCred);
-        console.log(makeCredResponse)
+    
+    .then((response) => {
+        let makeCredResponse = publicKeyCredentialToJSON(response);
+        return sendWebAuthnResponse(makeCredResponse)
     })
+    .then((response) => {
+        if(response.status === 'ok') {
+            loadMainContainer()   
+        } else {
+            alert(`Server responed with error. The message is: ${response.message}`);
+        }
+    })
+    .catch((error) => alert(error))
 
 
 })
@@ -33,6 +42,25 @@ let getMakeCredentialsChallenge = (formBody) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(formBody)
+    })
+    .then((response) => response.json())
+    .then((response) => {
+        if(response.status !== 'ok')
+            throw new Error(`Server responed with error. The message is: ${response.message}`);
+
+        return response
+    })
+}
+
+
+let sendWebAuthnResponse = (body) => {
+    return fetch('/webauthn/response', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
     })
     .then((response) => response.json())
     .then((response) => {

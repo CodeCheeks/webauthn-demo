@@ -47,6 +47,87 @@ router.post('/register', (request, response) => {
 })
 
 
+router.post('/response', (request, response) => {
+    if(!request.body       || !request.body.id
+    || !request.body.rawId || !request.body.response
+    || !request.body.type  || request.body.type !== 'public-key' ) {
+        response.json({
+            'status': 'failed',
+            'message': 'Response missing one or more of id/rawId/response/type fields, or type is not public-key!'
+        })
+
+        return
+    }
+
+    let webauthnResp = request.body
+    let clientData   = JSON.parse(base64url.decode(webauthnResp.response.clientDataJSON));
+
+    /* Check challenge... */
+    if(clientData.challenge !== request.session.challenge) {
+        response.json({
+            'status': 'failed',
+            'message': 'Challenges don\'t match!'
+        })
+    }
+
+    /* ...and origin */
+    if(clientData.origin !== config.origin) {
+        response.json({
+            'status': 'failed',
+            'message': 'Origins don\'t match!'
+        })
+    }
+
+    if(webauthnResp.response.attestationObject !== undefined) {
+        /* This is create cred */
+    
+    } else if(webauthnResp.response.authenticatorData !== undefined) {
+        /* This is get assertion */
+        
+    } else {
+        response.json({
+            'status': 'failed',
+            'message': 'Can not determine type of response!'
+        })
+    }
+
+
+    let result;
+    if(webauthnResp.response.attestationObject !== undefined) {
+        /* This is create cred */
+        result = utils.verifyAuthenticatorAttestationResponse(webauthnResp);
+
+        if(result.verified) {
+            database[request.session.username].authenticators.push(result.authrInfo);
+            database[request.session.username].registered = true
+        }
+    } else if(webauthnResp.response.authenticatorData !== undefined) {
+        /* This is get assertion */
+
+    } else {
+        response.json({
+            'status': 'failed',
+            'message': 'Can not determine type of response!'
+        })
+    }
+
+    if(result.verified) {
+        request.session.loggedIn = true;
+        response.json({ 'status': 'ok' })
+    } else {
+        response.json({
+            'status': 'failed',
+            'message': 'Can not authenticate signature!'
+        })
+    }
+
+
+})
+
+
+
+
+
 
 /* ---------- ROUTES END ---------- */
 
