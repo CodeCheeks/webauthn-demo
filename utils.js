@@ -195,7 +195,7 @@ let parseMakeCredAuthData = (buffer) => {
     return {rpIdHash, flagsBuf, flags, counter, counterBuf, aaguid, credID, COSEPublicKey}
 }
 
-let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
+/* let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
     let attestationBuffer = base64url.toBuffer(webAuthnResponse.response.attestationObject);
     let ctapMakeCredResp  = cbor.decodeAllSync(attestationBuffer)[0];
 
@@ -275,6 +275,41 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
         }
     } else {
         throw new Error('Unsupported attestation format! ' + ctapMakeCredResp.fmt);
+    }
+
+    return response
+} */
+
+
+let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
+    let attestationBuffer = base64url.toBuffer(webAuthnResponse.response.attestationObject);
+    let ctapMakeCredResp  = cbor.decodeAllSync(attestationBuffer)[0];
+
+    let response = {'verified': false};
+    if(ctapMakeCredResp.fmt === 'fido-u2f') {
+        let authrDataStruct = parseMakeCredAuthData(ctapMakeCredResp.authData);
+
+        if(!(authrDataStruct.flags & U2F_USER_PRESENTED))
+            throw new Error('User was NOT presented durring authentication!');
+
+        let clientDataHash  = hash(base64url.toBuffer(webAuthnResponse.response.clientDataJSON))
+        let reservedByte    = Buffer.from([0x00]);
+        let publicKey       = COSEECDHAtoPKCS(authrDataStruct.COSEPublicKey)
+        let signatureBase   = Buffer.concat([reservedByte, authrDataStruct.rpIdHash, clientDataHash, authrDataStruct.credID, publicKey]);
+
+        let PEMCertificate = ASN1toPEM(ctapMakeCredResp.attStmt.x5c[0]);
+        let signature      = ctapMakeCredResp.attStmt.sig;
+
+        response.verified = verifySignature(signature, signatureBase, PEMCertificate)
+
+        if(response.verified) {
+            response.authrInfo = {
+                fmt: 'fido-u2f',
+                publicKey: base64url.encode(publicKey),
+                counter: authrDataStruct.counter,
+                credID: base64url.encode(authrDataStruct.credID)
+            }
+        }
     }
 
     return response
