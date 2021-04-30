@@ -1,5 +1,5 @@
 const express       = require('express');
-const bodyParser    = require('body-parser');
+//const bodyParser    = require('body-parser');
 const cookieSession = require('cookie-session');
 const cookieParser  = require('cookie-parser');
 const urllib        = require('url');
@@ -10,12 +10,12 @@ const iso_3166_1    = require('iso-3166-1');
 
 const config        = require('./config.json');
 const defaultroutes = require('./routes/default');
-const passwordauth  = require('./routes/password');
+//const passwordauth  = require('./routes/password');
 const webuathnauth  = require('./routes/webauthn.js');
 
-const app           = express();
+const app = express();
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 /* ----- session ----- */
 app.use(cookieSession({
@@ -31,7 +31,7 @@ app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'static')));
 
 app.use('/', defaultroutes)
-app.use('/password', passwordauth)
+//app.use('/password', passwordauth)
 app.use('/webauthn', webuathnauth)
 
 const port = config.port || 3000;

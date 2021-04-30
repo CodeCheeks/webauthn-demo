@@ -16,9 +16,13 @@ $('#register').submit(function(event) {
         let publicKey = preformatMakeCredReq(response);
         return navigator.credentials.create({ publicKey })
     })
-    
+
     .then((response) => {
         let makeCredResponse = publicKeyCredentialToJSON(response);
+                                                                                                //TODO check if "publicKeyCredentialToJSON" works
+        console.log(response)
+        console.log(makeCredResponse)
+
         return sendWebAuthnResponse(makeCredResponse)
     })
     .then((response) => {
@@ -52,7 +56,7 @@ let getMakeCredentialsChallenge = (formBody) => {
     })
 }
 
-
+                                                                                                                    //TODO check line 63 cast
 let sendWebAuthnResponse = (body) => {
     return fetch('/webauthn/response', {
         method: 'POST',
