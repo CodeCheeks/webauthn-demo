@@ -195,7 +195,7 @@ let parseMakeCredAuthData = (buffer) => {
     return {rpIdHash, flagsBuf, flags, counter, counterBuf, aaguid, credID, COSEPublicKey}
 }
 
-/* let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
+let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
     let attestationBuffer = base64url.toBuffer(webAuthnResponse.response.attestationObject);
     let ctapMakeCredResp  = cbor.decodeAllSync(attestationBuffer)[0];
 
@@ -278,10 +278,10 @@ let parseMakeCredAuthData = (buffer) => {
     }
 
     return response
-} */
+}
 
 
-let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
+/* let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
     let attestationBuffer = base64url.toBuffer(webAuthnResponse.response.attestationObject);
     let ctapMakeCredResp  = cbor.decodeAllSync(attestationBuffer)[0];
 
@@ -313,7 +313,7 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
     }
 
     return response
-}
+} */
 
 
 /**
